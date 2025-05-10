@@ -36,18 +36,55 @@ Understanding how humans leverage semantic knowledge to navigate unfamiliar envi
 ## :hammer_and_wrench: Installation
 
 ### Getting Started
-Create the conda environment:
 ```bash
-conda_env_name=vlfm
-conda create -n $conda_env_name python=3.9 -y
-conda activate $conda_env_name
-pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 -f https://download.pytorch.org/whl/torch_stable.html
-pip install git+https://github.com/IDEA-Research/GroundingDINO.git@eeba084341aaa454ce13cb32fa7fd9282fc73a67 salesforce-lavis==1.0.2
+# create the conda environment
+conda create -y -n vlfm python=3.9 cmake=3.14.0
+conda activate vlfm
+
+# install habitat-sim 0.2.4
+conda install habitat-sim=0.2.4 withbullet -c conda-forge -c aihabitat
+# install habitat-lab 0.2.4
+git clone --branch stable https://github.com/facebookresearch/habitat-lab.git
+cd habitat-lab
+git checkout tags/v0.2.4
+# check branch: git branch 
+pip install -e habitat-lab
+pip install -e habitat-baselines
+cd ..
+
+# build the vlfm source code
+uv pip install -e .
+# pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+uv pip install groundingdino-py==0.4.0
+uv pip install salesforce-lavis==1.0.2
+
+
+# data preparation
+# 
+# need to download scene datasets in data/scene_datasets
+# https://github.com/facebookresearch/habitat-lab/blob/main/DATASETS.md
+# ln -s $(realpath ../data/scene_datasets) $(realpath ./data)/scene_datasets
+# 
+# need to download task data in data/datasets
+# go to https://github.com/facebookresearch/habitat-lab/blob/main/DATASETS.md and get the objectnav_mp3d_v1.zip 
+# and download and unzip to data/datasets/objectnav/mp3d/val/val.json.gz
+
+
+# download model weights according to instructions below
+
+
+# run 
+python -m vlfm.utils.generate_dummy_policy
+python -m vlfm.run habitat.dataset.data_path=data/datasets/objectnav/mp3d/val/val.json.gz
+
+# visualization 
+# https://github.com/bdaiinstitute/vlfm/issues/26 
+python -m vlfm.run habitat.dataset.data_path=data/datasets/objectnav/mp3d/val/val.json.gz habitat_baselines.eval.video_option='["disk"]' habitat_baselines.video_dir='./videos/agent_visualization'
 ```
-If you are using habitat and are doing simulation experiments, install this repo into your env with the following:
+<!-- If you are using habitat and are doing simulation experiments, install this repo into your env with the following:
 ```bash
 pip install -e .[habitat]
-```
+``` -->
 If you are using the Spot robot, install this repo into your env with the following:
 ```bash
 pip install -e .[reality]
